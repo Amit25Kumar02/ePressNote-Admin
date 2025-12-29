@@ -28,13 +28,23 @@ function useIsDesktop() {
 
 export function TopNav({ onLogout, onToggleSidebar }: TopNavProps) {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
-  const isDesktop = useIsDesktop(); 
+  const isDesktop = useIsDesktop();
+
+  const [user, setUser] = useState<{ name: string; email: string } | null>(null);
+
+  useEffect(() => {
+    const data = localStorage.getItem("user");
+    if (data) {
+      setUser(JSON.parse(data));
+    }
+  }, []);
+
 
   return (
     <div className="h-16 bg-card border-b border-border flex items-center justify-between px-4 md:px-8">
       {/* LEFT SIDE */}
       <div className="flex items-center gap-4">
-        
+
         {!isDesktop && (
           <button
             onClick={onToggleSidebar}
@@ -60,8 +70,9 @@ export function TopNav({ onLogout, onToggleSidebar }: TopNavProps) {
 
           <div className="flex items-center gap-3 pl-4 border-l border-border">
             <div className="text-right">
-              <p className="text-sm">Admin User</p>
-              <p className="text-xs text-muted-foreground">admin@epress.sa</p>
+              <p className="text-sm">{user?.name || "User"}</p>
+              <p className="text-xs text-muted-foreground">{user?.email || "Loading..."}</p>
+
             </div>
             <div className="w-10 h-10 bg-primary rounded-full cursor-pointer flex items-center justify-center">
               <User className="w-5 h-5 text-primary-foreground" />
@@ -94,10 +105,9 @@ export function TopNav({ onLogout, onToggleSidebar }: TopNavProps) {
                     <User className="w-5 h-5 text-primary-foreground" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium">Admin User</p>
-                    <p className="text-xs text-muted-foreground">
-                      admin@crcl.sa
-                    </p>
+                    <p className="text-sm">{user?.name || "User"}</p>
+                    <p className="text-xs text-muted-foreground">{user?.email || "Loading..."}</p>
+
                   </div>
                 </div>
               </div>

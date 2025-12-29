@@ -1,16 +1,19 @@
 import { useState } from "react";
+import axios from "axios";
 import { Lock, Mail, Eye, EyeOff } from "lucide-react";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
-import { Checkbox } from "./ui/checkbox";
+// import { Checkbox } from "./ui/checkbox";
+import api from "../../lib/axios";
 
 interface LoginProps {
   onLogin: () => void;
+  onShowSignup: () => void;
 }
 
-export function Login({ onLogin }: LoginProps) {
+export function Login({ onLogin, onShowSignup }: LoginProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -18,30 +21,25 @@ export function Login({ onLogin }: LoginProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setIsLoading(true);
 
-    setTimeout(() => {
-      if (email === "admin@epress.sa" && password === "admin123") {
-        // Generate a mock token and store it
-        const mockToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkFkbWluIFVzZXIiLCJpYXQiOjE1MTYyMzkwMjJ9.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
-        localStorage.setItem("token", mockToken);
-        
-        // Store user info if needed
-        localStorage.setItem("user", JSON.stringify({
-          email: "admin@epress.sa",
-          name: "Admin User",
-          role: "admin"
-        }));
-        
-        onLogin();
-      } else {
-        setError("Invalid email or password");
-        setIsLoading(false);
-      }
-    }, 1000);
+    try {
+      const response = await api.post('/api/v1/auth/login', {
+        email,
+        password
+      });
+
+      localStorage.setItem("token", response.data.token);
+      localStorage.setItem("user", JSON.stringify(response.data.user));
+      onLogin();
+    } catch (error: any) {
+      setError(error.response?.data?.message || "Invalid email or password");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -108,7 +106,7 @@ export function Login({ onLogin }: LoginProps) {
             )}
 
             <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
+              {/* <div className="flex items-center gap-2">
                 <Checkbox
                   className="size-3.5 border-border data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground cursor-pointer"
                   id="remember"
@@ -127,7 +125,7 @@ export function Login({ onLogin }: LoginProps) {
                 className="text-xs sm:text-sm text-primary hover:underline text-left sm:text-right"
               >
                 Forgot password?
-              </button>
+              </button> */}
             </div>
 
             <Button
@@ -140,8 +138,14 @@ export function Login({ onLogin }: LoginProps) {
           </form>
 
           <div className="mt-6 pt-6 border-t border-border">
-            <p className="text-xs text-center text-muted-foreground">
+            <p className="text-xs text-center text-muted-foreground mb-3">
               This is a secure admin area. Unauthorized access is prohibited.
+            </p>
+            <p className="text-xs text-center text-muted-foreground">
+              Don't have an account?{" "}
+              <button className="text-primary hover:underline cursor-pointer" onClick={onShowSignup}>
+                Sign up here
+              </button>
             </p>
           </div>
         </Card>
@@ -149,18 +153,6 @@ export function Login({ onLogin }: LoginProps) {
         <div className="mt-4 sm:mt-6 text-center">
           <p className="text-xs sm:text-sm text-muted-foreground">
             © 2025 ePress Note. All rights reserved.
-          </p>
-        </div>
-
-        <div className="mt-6 sm:mt-8 p-3 sm:p-4 bg-muted/30 rounded-lg border border-border">
-          <p className="text-xs text-muted-foreground mb-2">
-            <strong>Demo Credentials:</strong>
-          </p>
-          <p className="text-xs text-muted-foreground">
-            Email: admin@epress.sa
-          </p>
-          <p className="text-xs text-muted-foreground">
-            Password: admin123
           </p>
         </div>
       </div>
