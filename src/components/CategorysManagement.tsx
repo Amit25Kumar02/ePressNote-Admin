@@ -174,7 +174,7 @@ export default function CategoriesPage() {
                       <td className="px-4 py-3">
                         {cat.image ? (
                           <img
-                            src={`http://13.200.174.224:83/uploads/${cat.image}`}
+                            src={`https://epressnoteapi.testenvapp.com/uploads/${cat.image}`}
                             className="w-10 h-10 object-contain"
                           />
                         ) : (
