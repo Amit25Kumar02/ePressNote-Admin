@@ -48,14 +48,13 @@ export default function CategoriesPage() {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      // ✅ FIXED KEY
+   
       setCategories(res.data?.categories || []);
     } catch {
       toast.error("Failed to load categories");
     }
   };
 
-  /* ================= MODAL ================= */
   const openAddModal = () => {
     resetForm();
     setOpen(true);
@@ -78,7 +77,6 @@ export default function CategoriesPage() {
     setImageFile(null);
   };
 
-  /* ================= SUBMIT ================= */
   const handleSubmit = async () => {
     if (!name) {
       toast.error("Category name is required");
@@ -125,7 +123,6 @@ export default function CategoriesPage() {
     }
   };
 
-  /* ================= DELETE ================= */
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this category?")) return;
     try {

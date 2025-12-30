@@ -120,9 +120,9 @@ export default function AdvertisementsManagement() {
         </div>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
         {/* Table */}
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-3">
           <Card className="bg-card border-border overflow-hidden">
             <Table>
               <TableHeader>
@@ -207,7 +207,7 @@ export default function AdvertisementsManagement() {
         </div>
 
         {/* Details Side Panel */}
-        <div>
+        {/* <div>
           <Card className="p-6 bg-card border-border sticky top-6">
             {selectedAd ? (
               <div className="space-y-4">
@@ -259,7 +259,7 @@ export default function AdvertisementsManagement() {
               </div>
             )}
           </Card>
-        </div>
+        </div> */}
       </div>
     </div>
   );

@@ -141,12 +141,12 @@ export function Login({ onLogin, onShowSignup }: LoginProps) {
             <p className="text-xs text-center text-muted-foreground mb-3">
               This is a secure admin area. Unauthorized access is prohibited.
             </p>
-            <p className="text-xs text-center text-muted-foreground">
+            {/* <p className="text-xs text-center text-muted-foreground">
               Don't have an account?{" "}
               <button className="text-primary hover:underline cursor-pointer" onClick={onShowSignup}>
                 Sign up here
               </button>
-            </p>
+            </p> */}
           </div>
         </Card>
 

@@ -59,14 +59,14 @@ export function TopNav({ onLogout, onToggleSidebar }: TopNavProps) {
 
       {/* RIGHT SIDE */}
       {isDesktop ? (
-        // 👉 DESKTOP VIEW (md / lg)
+     
         <div className="p-2 hover:bg-muted justify-end flex rounded-lg">
-          <button className="relative p-2 hover:bg-muted rounded-lg transition-colors">
+          {/* <button className="relative p-2 hover:bg-muted rounded-lg transition-colors">
             <Bell className="w-5 h-5 cursor-pointer" />
             <Badge className="absolute -top-1 -right-1 bg-primary text-primary-foreground w-5 h-5 flex items-center justify-center p-0 text-xs">
               3
             </Badge>
-          </button>
+          </button> */}
 
           <div className="flex items-center gap-3 pl-4 border-l border-border">
             <div className="text-right">
@@ -113,7 +113,7 @@ export function TopNav({ onLogout, onToggleSidebar }: TopNavProps) {
               </div>
 
               <div className="p-2">
-                <button className="w-full flex items-center gap-3 p-3 hover:bg-muted rounded-lg transition-colors">
+                {/* <button className="w-full flex items-center gap-3 p-3 hover:bg-muted rounded-lg transition-colors">
                   <div className="relative">
                     <Bell className="w-5 h-5" />
                     <Badge className="absolute -top-1 -right-1 bg-primary text-primary-foreground w-4 h-4 flex items-center justify-center text-[10px]">
@@ -121,7 +121,7 @@ export function TopNav({ onLogout, onToggleSidebar }: TopNavProps) {
                     </Badge>
                   </div>
                   <span className="text-sm">Notifications</span>
-                </button>
+                </button> */}
 
                 <button
                   onClick={() => {
