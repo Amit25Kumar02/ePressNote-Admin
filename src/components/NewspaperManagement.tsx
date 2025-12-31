@@ -14,7 +14,7 @@ type Newspaper = {
   image?: string;
 };
 
-const BACKEND_URL = "http://13.200.174.224:83";
+const BACKEND_URL = "https://epressnoteapi.testenvapp.com";
 
 export default function NewspapersPage() {
   const [newspapers, setNewspapers] = useState<Newspaper[]>([]);
