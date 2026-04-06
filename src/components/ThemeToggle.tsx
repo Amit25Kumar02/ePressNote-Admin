@@ -6,7 +6,7 @@ import { Moon, Sun } from "lucide-react";
 type Theme = "light" | "dark";
 
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>("dark");
+  const [theme, setTheme] = useState<Theme>("light");
 
   // Read saved theme on mount
   useEffect(() => {
@@ -15,7 +15,7 @@ export function ThemeToggle() {
     const stored = localStorage.getItem("theme") as Theme | null;
     const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
 
-    const initial = stored ?? (prefersDark ? "dark" : "light");
+    const initial = stored ?? "light";
     setTheme(initial);
     applyTheme(initial);
   }, []);
@@ -46,11 +46,11 @@ export function ThemeToggle() {
     >
       <span className="flex gap-2 items-center">
       {theme === "dark" ? (
-        <Moon className="w-6 h-6" />
-      ) : (
         <Sun className="w-6 h-6" />
+      ) : (
+        <Moon className="w-6 h-6" />
       )}
-      {theme === "dark" ? "Dark Mode" : "Light Mode"}
+      {theme === "dark" ? "Light Mode" : "Dark Mode"}
       </span>
     </button>
   );

@@ -8,6 +8,12 @@ import UsersManagement from "./components/UsersManagement";
 import AdvertisementsManagement from "./components/BusinessesManagement";
 import NewspapersPage from "./components/NewspaperManagement";
 import CategoriesPage from "./components/CategorysManagement";
+import {PressNoteManagement} from "./components/PressNoteManagement";
+import {ContactManagement} from "./components/ContactManagement";
+import MediaOrganizations from "./components/InviteCodes";
+import OfferManagement from "./components/offerManagement";
+import PricingPanel from "./components/PricingManagement";
+import MediaPartners from "./components/MediaPartners";
 
 
 export default function App() {
@@ -44,6 +50,17 @@ export default function App() {
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
 
+  useEffect(() => {
+    if (isMobile && sidebarOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isMobile, sidebarOpen]);
+
   const handleLogin = () => {
     setIsAuthenticated(true);
     localStorage.setItem('isAuthenticated', 'true');
@@ -79,6 +96,12 @@ export default function App() {
       case "businesses": return <AdvertisementsManagement />;
       case "newspaper": return <NewspapersPage />;
       case "category": return <CategoriesPage />;
+      case "pressnote": return <PressNoteManagement />;
+      case "contact": return <ContactManagement />;
+      case "media": return <MediaOrganizations />;
+      case "offer": return <OfferManagement />;
+      case "price": return <PricingPanel />;
+      case "media-partners": return <MediaPartners />;
       default: return <Dashboard />;
     }
   };
@@ -99,7 +122,7 @@ export default function App() {
 
 
   return (
-    <div className="flex min-h-screen bg-background text-foreground">
+    <div className={`flex min-h-screen bg-background text-foreground ${isMobile && sidebarOpen ? 'overflow-hidden' : ''}`}>
       {/* Mobile Overlay */}
       {isMobile && sidebarOpen && (
         <div
@@ -132,7 +155,7 @@ export default function App() {
           sidebarOpen={sidebarOpen}
         />
 
-        <main className="p-6 md:p-8 overflow-x-hidden">
+        <main className="p-6 md:p-8 overflow-x-hidden h-[calc(100vh-4rem)] overflow-y-auto">
           {renderContent()}
         </main>
       </div>

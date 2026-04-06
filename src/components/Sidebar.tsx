@@ -6,6 +6,13 @@ import {
   Newspaper,
   FolderTree,
   Megaphone,
+  MessageCircle,
+  FileText,
+  Folder,
+  FolderOpen,
+  BadgePercent,
+  IndianRupee,
+  Handshake,
 } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle"; 
 
@@ -24,9 +31,12 @@ export function Sidebar({ activeSection, onNavigate, isOpen = true, onClose, isM
     { id: "businesses", label: "Advertisements", icon: Megaphone },
     { id: "newspaper", label: "Newspaper", icon: Newspaper },
     { id: "category", label: "Category", icon: FolderTree },
-    // { id: "announcements", label: "Announcements", icon: Megaphone },
-    // { id: "voting", label: "Voting & Polls", icon: BarChart3 },
-    // { id: "invite-codes", label: "Invite Codes", icon: Ticket },
+    { id: "pressnote", label: "PressNotes", icon: FileText },
+    { id: "contact", label: "Contact Us", icon: MessageCircle },
+    { id: "media", label: "Media", icon: FolderOpen },
+    { id: "offer", label: "Offers", icon: BadgePercent },
+    { id: "price", label: "Pricing", icon: IndianRupee },
+    { id: "media-partners", label: "Media Partners", icon: Handshake },
   ];
 
   return (
@@ -75,7 +85,7 @@ export function Sidebar({ activeSection, onNavigate, isOpen = true, onClose, isM
             );
           })}
         </ul>
-        <ThemeToggle />
+        {/* <ThemeToggle /> */}
       </nav>
 
       <div className="p-4 border-t border-sidebar-border space-y-3">

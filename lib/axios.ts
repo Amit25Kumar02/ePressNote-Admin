@@ -1,10 +1,12 @@
 import axios from "axios";
 
 const api = axios.create({
-  // baseURL:"http://13.200.174.224:83",
-  baseURL:"https://epressnoteapi.testenvapp.com",
-
-  withCredentials: false,
+  baseURL: import.meta.env.VITE_API_URL || "https://prodapi.epressnote.com",
+  // withCredentials: false,
+   headers: {
+    // "Content-Type": "application/json",
+    "ngrok-skip-browser-warning": "true", 
+  },
 });
 
 export default api;

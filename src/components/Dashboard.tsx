@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Users, Newspaper, LayoutList, Tags, TrendingUp } from "lucide-react";
+import { Users, Newspaper, LayoutList, Tags } from "lucide-react";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import api from "../../lib/axios";
 
 export function Dashboard() {
   const [loading, setLoading] = useState(true);
+
   const [stats, setStats] = useState({
     users: 0,
     ads: 0,
@@ -40,60 +41,70 @@ export function Dashboard() {
   const fetchStats = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem("token");
-      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      // const token = localStorage.getItem("token");
+      
+      // If using demo token, show mock data
+     
+
+      // const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
       const [usersRes, adsRes, newsRes, catRes] = await Promise.all([
-        api.get("/api/v1/auth/getAllUser", { headers }),
-        api.get("/api/v1/web/advertisements/getAllAdvertisment", { headers }),
-        api.get("/api/v1/admin/newspapers", { headers }),
-        api.get("/api/v1/admin/categories", { headers }),
+        api.get("/api/v1/auth/getAllUser").catch(() => ({ data: { users: [] } })),
+        api.get("/api/v1/web/advertisements/getAllAdvertisment?limit=1000").catch(() => ({ data: { data: [] } })),
+        api.get("/api/v1/admin/newspapers?limit=1000").catch(() => ({ data: { newspapers: [] } })),
+        api.get("/api/v1/admin/categories?limit=1000").catch(() => ({ data: { categories: [] } })),
       ]);
 
+      /*  SAFELY EXTRACT ARRAYS */
+      const usersArr = usersRes.data?.users || usersRes.data?.data || [];
+      const adsArr = adsRes.data?.advertisements || adsRes.data?.data || [];
+      const newsArr = newsRes.data?.newspapers || newsRes.data?.data || [];
+      const catArr = catRes.data?.categories || catRes.data?.data || [];
+
+      /*  DATE CALCULATION */
       const now = new Date();
       const currMonth = now.getMonth();
       const lastMonth = currMonth === 0 ? 11 : currMonth - 1;
 
-      const usersArr = usersRes.data?.users ?? [];
-      const adsArr = adsRes.data?.advertisements ?? [];
-      const newsArr = newsRes.data?.newspapers ?? [];
-      const catArr = catRes.data?.categories ?? [];
-
+      /*  PENDING ADS (SAFE) */
       const pending = adsArr.filter(
-        (a: any) =>
-          a?.status?.toLowerCase() === "pending" ||
-          a?.approved === false ||
-          a?.isApproved === false
+        (a: any) => !a?.status || a?.status === "pending" || a?.status === false || a?.approved === false
       );
 
+      /* ✅ MONTHLY COUNTS */
       const currentUsers = usersArr.filter(
-        (u: any) => new Date(u.createdAt).getMonth() === currMonth
+        (u: any) => u.createdAt && new Date(u.createdAt).getMonth() === currMonth
       ).length;
+
       const lastUsers = usersArr.filter(
-        (u: any) => new Date(u.createdAt).getMonth() === lastMonth
+        (u: any) => u.createdAt && new Date(u.createdAt).getMonth() === lastMonth
       ).length;
 
       const currentAds = adsArr.filter(
-        (a: any) => new Date(a.createdAt).getMonth() === currMonth
+        (a: any) => (a.createdAt || a.publicationDate) && new Date(a.createdAt || a.publicationDate).getMonth() === currMonth
       ).length;
+
       const lastAds = adsArr.filter(
-        (a: any) => new Date(a.createdAt).getMonth() === lastMonth
+        (a: any) => (a.createdAt || a.publicationDate) && new Date(a.createdAt || a.publicationDate).getMonth() === lastMonth
       ).length;
 
       const currentNews = newsArr.filter(
-        (n: any) => new Date(n.createdAt).getMonth() === currMonth
+        (n: any) => n.createdAt && new Date(n.createdAt).getMonth() === currMonth
       ).length;
+
       const lastNews = newsArr.filter(
-        (n: any) => new Date(n.createdAt).getMonth() === lastMonth
+        (n: any) => n.createdAt && new Date(n.createdAt).getMonth() === lastMonth
       ).length;
 
       const currentCategory = catArr.filter(
-        (c: any) => new Date(c.createdAt).getMonth() === currMonth
-      ).length;
-      const lastCategory = catArr.filter(
-        (c: any) => new Date(c.createdAt).getMonth() === lastMonth
+        (c: any) => c.createdAt && new Date(c.createdAt).getMonth() === currMonth
       ).length;
 
+      const lastCategory = catArr.filter(
+        (c: any) => c.createdAt && new Date(c.createdAt).getMonth() === lastMonth
+      ).length;
+
+      /* ✅ SET STATE */
       setStats({
         users: usersArr.length,
         ads: adsArr.length,
@@ -108,25 +119,27 @@ export function Dashboard() {
         categories: calcGrowthPercent(currentCategory, lastCategory),
       });
 
-      setRecentUsers(usersArr.slice(0, 5));
-      setPendingAds(pending.slice(0, 5));
+      setRecentUsers(usersArr.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 5));
+      setPendingAds(pending.sort((a: any, b: any) => new Date(b.createdAt || b.publicationDate).getTime() - new Date(a.createdAt || a.publicationDate).getTime()).slice(0, 5));
     } catch (err) {
-      console.error("Error loading dashboard:", err);
+      console.error("Dashboard error:", err);
     } finally {
       setLoading(false);
     }
   };
 
-  const approveAd = async (id: string) => {
-    try {
-      const token = localStorage.getItem("token");
-      const headers = token ? { Authorization: `Bearer ${token}` } : {};
-      await api.patch(`/api/v1/admin/advertisements/approve/${id}`, {}, { headers });
-      setPendingAds((prev) => prev.filter((ad) => ad._id !== id && ad.id !== id));
-    } catch (err) {
-      console.error("Error approving:", err);
-    }
-  };
+  // const approveAd = async (id: string) => {
+  //   try {
+  //     const token = localStorage.getItem("token");
+  //     await api.put(`/api/v1/web/advertisements/updatedvertisement/${id}`, {}, {
+  //       headers: { Authorization: `Bearer ${token}` },
+  //     });
+
+  //     setPendingAds((prev) => prev.filter((ad) => ad._id !== id));
+  //   } catch (err) {
+  //     console.error("Approve error:", err);
+  //   }
+  // };
 
   const statCards = [
     { label: "Total Users", value: stats.users, change: growth.users, icon: Users },
@@ -139,24 +152,28 @@ export function Dashboard() {
     <div className="space-y-8">
       <div>
         <h1 className="text-xl font-semibold">Dashboard Overview</h1>
-        <p className="text-muted-foreground mt-1">Monitor your platform's key metrics and activity</p>
+        <p className="text-muted-foreground mt-1">
+          Monitor your platform's key metrics and activity
+        </p>
       </div>
 
-      {/* STATS UI LIKE SAMPLE */}
+      {/* STATS */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {statCards.map((stat, index) => {
           const Icon = stat.icon;
           const isPositive = stat.change >= 0;
           return (
             <Card key={index} className="p-6 bg-card border-border">
-              <div className="flex items-start justify-between">
+              <div className="flex items-start justify-between gap-2">
                 <div>
                   <p className="text-muted-foreground text-sm">{stat.label}</p>
                   <h2 className="mt-2 text-2xl font-bold">
                     {loading ? "..." : stat.value}
                   </h2>
-                  <p className={`text-sm mt-1 ${isPositive ? "text-green-600" : "text-red-600"}`}>
-                    {isPositive ? `+${stat.change}%` : `${stat.change}%`} from last month
+                  <p
+                    className={`text-sm mt-1 text-green-600`}
+                  >
+                    +{Math.abs(stat.change)}% from last month
                   </p>
                 </div>
                 <div className="p-3 bg-primary/10 rounded-lg text-primary">
@@ -168,46 +185,41 @@ export function Dashboard() {
         })}
       </div>
 
-      {/* 2 SIDE SECTION LIKE SAMPLE */}
+      {/* BOTTOM SECTION */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Users */}
-        <Card className="p-6 bg-card border-border">
+        <Card className="p-6">
           <h3 className="mb-4 font-semibold">Recent Registered Users</h3>
-          {loading ? (
-            <p className="text-muted-foreground">Loading...</p>
-          ) : recentUsers.length === 0 ? (
-            <p className="text-muted-foreground">No users found</p>
+          {recentUsers.length === 0 ? (
+            <p className="text-muted-foreground">No users available</p>
           ) : (
             <div className="space-y-4">
-              {recentUsers.map((u: any, index) => (
-                <div key={index} className="flex items-start gap-4 pb-4 border-b border-border last:border-none">
-                  <div className="w-2 h-2 bg-primary rounded-full mt-2" />
-                  <div className="flex-1">
-                    <p>{u.fullName || u.name}</p>
-                    <p className="text-sm text-muted-foreground">{u.email}</p>
-                  </div>
+              {recentUsers.map((u, i) => (
+                <div key={i} className="border-b pb-3 last:border-none">
+                  <p>{u.fullName || u.name}</p>
+                  <p className="text-sm text-muted-foreground">{u.email}</p>
                 </div>
               ))}
             </div>
           )}
         </Card>
 
-        {/* Pending ads like "pending approvals" */}
-        <Card className="p-6 bg-card border-border">
+        {/* Pending Ads */}
+        <Card className="p-6">
           <h3 className="mb-4 font-semibold">Pending Advertisements</h3>
           {pendingAds.length === 0 ? (
-            <p className="text-muted-foreground">No pending ads</p>
+            <p className="text-muted-foreground">No pending advertisements available</p>
           ) : (
-            <div className="space-y-4">
-              {pendingAds.map((ad: any, index) => (
-                <div key={index} className="flex items-center justify-between p-4 bg-muted rounded-lg">
+            <div className="space-y-3">
+              {pendingAds.map((ad, i) => (
+                <div key={i} className="flex justify-between bg-muted p-3 rounded">
                   <div>
-                    <p>{ad.adTitle || ad.title || "Ad Title"}</p>
-                    <p className="text-sm text-muted-foreground">{ad.contactInfo || ad.email || ""}</p>
+                    <p>{ad.adTitle || "Advertisement"}</p>
+                    <p className="text-sm text-muted-foreground">{ad.contactInfo}</p>
                   </div>
-                  <Button className="text-xs" onClick={() => approveAd(ad._id || ad.id)}>
+                  {/* <Button size="sm" onClick={() => approveAd(ad._id)}>
                     Approve
-                  </Button>
+                  </Button> */}
                 </div>
               ))}
             </div>

@@ -1,9 +1,22 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Pencil, Trash2, X, Image as ImageIcon, MoreVertical } from "lucide-react";
+import { Plus, Pencil, Trash2, X, Image as ImageIcon, Search } from "lucide-react";
 import api from "../../lib/axios";
 import { toast, ToastContainer } from "react-toastify";
+import { Card } from "./ui/card";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "./ui/table";
+
+const BACKEND_URL = import.meta.env.VITE_API_URL || "https://prodapi.epressnote.com";
 
 type Category = {
   _id: string;
@@ -13,9 +26,13 @@ type Category = {
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
-  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCategories, setTotalCategories] = useState(0);
+  const itemsPerPage = 10;
 
   const [name, setName] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -23,33 +40,19 @@ export default function CategoriesPage() {
 
   /* ================= FETCH ================= */
   useEffect(() => {
-    fetchCategories();
-  }, []);
+    fetchCategories(currentPage);
+  }, [currentPage]);
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      if (!target.closest('.dropdown-container')) {
-        setOpenDropdown(null);
-      }
-    };
-    
-    if (openDropdown) {
-      document.addEventListener('click', handleClickOutside);
-      return () => document.removeEventListener('click', handleClickOutside);
-    }
-  }, [openDropdown]);
-
-  const fetchCategories = async () => {
+  const fetchCategories = async (page = 1) => {
     try {
       const token = localStorage.getItem("token");
-      const res = await api.get("/api/v1/admin/categories", {
+      const res = await api.get(`/api/v1/admin/categories?page=${page}&limit=${itemsPerPage}&sort=-createdAt`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-   
-      setCategories(res.data?.categories || []);
+      setCategories(res.data?.categories || res.data?.data || []);
+      setTotalPages(res.data?.pagination?.totalPages || 1);
+      setTotalCategories(res.data?.pagination?.totalItems || 0);
     } catch {
       toast.error("Failed to load categories");
     }
@@ -114,7 +117,7 @@ export default function CategoriesPage() {
         toast.success("Category created");
       }
 
-      fetchCategories();
+      fetchCategories(currentPage);
       closeModal();
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Action failed");
@@ -131,105 +134,137 @@ export default function CategoriesPage() {
         headers: { Authorization: `Bearer ${token}` },
       });
       toast.success("Category deleted");
-      fetchCategories();
+      fetchCategories(currentPage);
     } catch {
       toast.error("Delete failed");
     }
   };
 
+  /* ================= FILTER ================= */
+  const filteredCategories = categories.filter((cat) =>
+    cat.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
 
   return (
     <>
       <ToastContainer />
-      <div className="max-w-6xl mx-auto p-6">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-lg font-semibold">Category Management</h1>
-          <button
-            onClick={openAddModal}
-            className="bg-primary text-primary-foreground cursor-pointer px-4 py-2 rounded flex items-center gap-2"
-          >
+      <div className="space-y-6">
+        {/* HEADER */}
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-xl font-semibold">Categories</h1>
+            <p className="text-muted-foreground">View & manage categories</p>
+          </div>
+          <Button onClick={openAddModal} className="flex items-center gap-2">
             <Plus size={16} /> Add Category
-          </button>
+          </Button>
         </div>
-        <div className="grid grid-cols-12">
-          <div className="col-span-12 bg-card border rounded-xl overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-muted">
-                <tr>
-                  <th className="px-4 py-3 text-left">Image</th>
-                  <th className="px-4 py-3 text-left">Name</th>
-                  <th className="px-4 py-3 text-left">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {categories.length === 0 ? (
-                  <tr>
-                    <td colSpan={3} className="text-center py-6 text-muted-foreground">
-                      No categories found
-                    </td>
-                  </tr>
+
+        {/* SEARCH */}
+        <Card className="p-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" />
+            <Input
+              placeholder="Search by name..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+        </Card>
+
+        {/* TABLE */}
+        <div className="grid grid-cols-1">
+          <Card>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Image</TableHead>
+                  <TableHead>Name</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredCategories.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={3} className="text-center py-6 text-muted-foreground">
+                      No categories available
+                    </TableCell>
+                  </TableRow>
                 ) : (
-                  categories.map((cat) => (
-                    <tr key={cat._id} className="border-b">
-                      <td className="px-4 py-3">
+                  filteredCategories.map((cat) => (
+                    <TableRow key={cat._id}>
+                      <TableCell>
                         {cat.image ? (
                           <img
-                            src={`https://epressnoteapi.testenvapp.com/uploads/${cat.image}`}
+                            src={`${BACKEND_URL}/uploads/${cat.image}`}
                             className="w-10 h-10 object-contain"
                           />
                         ) : (
                           <ImageIcon size={18} />
                         )}
-                      </td>
-                      <td className="px-4 py-3">{cat.name}</td>
-                      <td className="px-4 py-3 relative dropdown-container">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setOpenDropdown(openDropdown === cat._id ? null : cat._id);
-                          }}
-                          className="p-1 hover:bg-muted rounded cursor-pointer"
-                        >
-                          <MoreVertical size={16} />
-                        </button>
-                        
-                        {openDropdown === cat._id && (
-                          <div className="absolute right-0 top-8 bg-popover border border-border rounded-lg shadow-lg z-50 min-w-[120px]">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                openEditModal(cat);
-                                setOpenDropdown(null);
-                              }}
-                              className="w-full px-3 py-2 text-left hover:bg-muted flex items-center gap-2 text-primary rounded-t-lg cursor-pointer"
-                            >
-                              <Pencil size={14} /> Edit
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDelete(cat._id);
-                                setOpenDropdown(null);
-                              }}
-                              className="w-full px-3 py-2 text-left hover:bg-muted flex items-center gap-2 text-destructive rounded-b-lg cursor-pointer"
-                            >
-                              <Trash2 size={14} /> Delete
-                            </button>
-                          </div>
-                        )}
-                      </td>
-                    </tr>
+                      </TableCell>
+                      <TableCell>{cat.name}</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => openEditModal(cat)}
+                            className="h-8 w-8 p-0 hover:bg-primary/10 hover:text-primary"
+                          >
+                            <Pencil size={16} />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDelete(cat._id)}
+                            className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
+                          >
+                            <Trash2 size={16} />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
                   ))
                 )}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
+          </Card>
+        </div>
+        
+        {/* PAGINATION */}
+        <div className="flex items-center justify-between mt-6">
+          <p className="text-sm text-muted-foreground">
+            Showing {totalCategories > 0 ? Math.min((currentPage - 1) * itemsPerPage + 1, totalCategories) : 0} to {totalCategories > 0 ? Math.min(currentPage * itemsPerPage, totalCategories) : 0} of {totalCategories} categories
+          </p>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(currentPage - 1)}
+              className="border-border"
+            >
+              Previous
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={currentPage >= totalPages}
+              onClick={() => setCurrentPage(currentPage + 1)}
+              className="border-border"
+            >
+              Next
+            </Button>
           </div>
         </div>
 
         {/* MODAL */}
         {open && (
-          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-            <div className="bg-card w-full max-w-md rounded-xl p-6">
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-card w-full max-w-md border-border rounded-xl p-6">
               <div className="flex justify-between mb-4">
                 <h2 className="text-lg font-medium">
                   {editId ? "Edit Category" : "Add Category"}

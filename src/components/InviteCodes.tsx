@@ -1,10 +1,14 @@
-import { useState } from "react";
-import { Search, Plus, Copy, Check, Trash2 } from "lucide-react";
+"use client";
+
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { Search, Trash2, Eye, Mail } from "lucide-react";
+
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { Label } from "./ui/label";
 import { Badge } from "./ui/badge";
+
 import {
   Table,
   TableBody,
@@ -13,332 +17,418 @@ import {
   TableHeader,
   TableRow,
 } from "./ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "./ui/dialog";
 
-const inviteCodes = [
-  {
-    id: 1,
-    code: "SAUDI2025",
-    createdDate: "2025-01-10",
-    expiryDate: "2025-12-31",
-    usageCount: 47,
-    maxUses: 100,
-    status: "Active",
-    createdBy: "Admin User"
-  },
-  {
-    id: 2,
-    code: "RIYADH100",
-    createdDate: "2025-01-15",
-    expiryDate: "2025-06-30",
-    usageCount: 89,
-    maxUses: 100,
-    status: "Active",
-    createdBy: "Admin User"
-  },
-  {
-    id: 3,
-    code: "WELCOME2025",
-    createdDate: "2025-01-20",
-    expiryDate: "2025-12-31",
-    usageCount: 156,
-    maxUses: 500,
-    status: "Active",
-    createdBy: "Admin User"
-  },
-  {
-    id: 4,
-    code: "JEDDAH50",
-    createdDate: "2025-02-01",
-    expiryDate: "2025-05-31",
-    usageCount: 23,
-    maxUses: 50,
-    status: "Active",
-    createdBy: "Admin User"
-  },
-  {
-    id: 5,
-    code: "BETA2024",
-    createdDate: "2024-12-01",
-    expiryDate: "2024-12-31",
-    usageCount: 100,
-    maxUses: 100,
-    status: "Expired",
-    createdBy: "Admin User"
-  },
-  {
-    id: 6,
-    code: "VIP2025",
-    createdDate: "2025-02-15",
-    expiryDate: "2025-12-31",
-    usageCount: 12,
-    maxUses: 25,
-    status: "Active",
-    createdBy: "Admin User"
-  },
-];
+import api from "../../lib/axios";
 
-export function InviteCodes() {
+/* ================= TYPES ================= */
+
+type MediaAgency = {
+  _id: string;
+  mediaType: string;
+  organization: string;
+  organizationType: string;
+  websiteUrl: string;
+  country: string;
+  state: string;
+  city: string;
+  address: string;
+  personName: string;
+  designation: string;
+  phone: string;
+  email: string;
+  createdAt: string;
+};
+
+/* ================= COMPONENT ================= */
+
+export default function MediaOrganizations() {
+  const [data, setData] = useState<MediaAgency[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [isGenerateOpen, setIsGenerateOpen] = useState(false);
-  const [copiedCode, setCopiedCode] = useState<string | null>(null);
-  const [newCode, setNewCode] = useState({
-    code: "",
-    maxUses: "100",
-    expiryDate: ""
-  });
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const handleCopyCode = (code: string) => {
-    navigator.clipboard.writeText(code);
-    setCopiedCode(code);
-    setTimeout(() => setCopiedCode(null), 2000);
-  };
+  const [openView, setOpenView] = useState(false);
+  const [selectedAgency, setSelectedAgency] =
+    useState<MediaAgency | null>(null);
 
-  const generateRandomCode = () => {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    let result = '';
-    for (let i = 0; i < 8; i++) {
-      result += chars.charAt(Math.floor(Math.random() * chars.length));
+  const itemsPerPage = 10;
+
+  /* ================= FETCH ================= */
+
+  const fetchMediaAgencies = async () => {
+    try {
+      const res = await api.get(
+        "/api/v1/web/mediaAgency/getMediaAgency"
+      );
+      setData(res.data?.data || []);
+    } catch (error) {
+      console.error("Fetch Error:", error);
+    } finally {
+      setLoading(false);
     }
-    setNewCode({ ...newCode, code: result });
   };
 
-  const handleGenerateCode = () => {
-    // Mock implementation - in real app, would submit to backend
-    console.log("Generating code:", newCode);
-    setIsGenerateOpen(false);
-    setNewCode({
-      code: "",
-      maxUses: "100",
-      expiryDate: ""
-    });
+  useEffect(() => {
+    fetchMediaAgencies();
+  }, []);
+
+  /* ================= FILTER ================= */
+
+  const filteredData = data.filter(
+    (item) =>
+      item.organization.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.city.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  /* ================= DELETE ================= */
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this media agency?")) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      await api.delete(
+        `/api/v1/web/mediaAgency/deleteMediaAgency?id=${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      // toast.success("Advertisement deleted");
+      setData((prev) => prev.filter((item) => item._id !== id));
+    } catch (error) {
+      alert("Delete failed");
+    }
   };
+
+  if (loading) {
+    return <p className="text-center text-muted-foreground">Loading...</p>;
+  }
+
+  /* ================= UI ================= */
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div >
-          <h1>Invite Codes Management</h1>
-          <p className="text-muted-foreground mt-1">Generate and track invite code usage</p>
-        </div>
-        <Dialog open={isGenerateOpen} onOpenChange={setIsGenerateOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-primary hover:bg-primary/90  text-primary-foreground">
-              <Plus className="w-4 h-4 mr-2" />
-              Generate Invite Code
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="bg-card border-border">
-            <DialogHeader>
-              <DialogTitle>Generate New Invite Code</DialogTitle>
-              <DialogDescription>
-                Create a new invite code for user registration
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <Label htmlFor="code">Invite Code</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="code"
-                    placeholder="e.g., SAUDI2025"
-                    value={newCode.code}
-                    onChange={(e) => setNewCode({ ...newCode, code: e.target.value.toUpperCase() })}
-                    className="bg-muted border-border"
-                  />
-                  <Button
-                    variant="outline"
-                    onClick={generateRandomCode}
-                    className="border-border"
-                  >
-                    Generate
-                  </Button>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Use alphanumeric characters only (A-Z, 0-9)
-                </p>
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="maxUses">Maximum Uses</Label>
-                <Input
-                  id="maxUses"
-                  type="number"
-                  placeholder="100"
-                  value={newCode.maxUses}
-                  onChange={(e) => setNewCode({ ...newCode, maxUses: e.target.value })}
-                  className="bg-muted border-border"
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="expiryDate">Expiry Date</Label>
-                <Input
-                  id="expiryDate"
-                  type="date"
-                  value={newCode.expiryDate}
-                  onChange={(e) => setNewCode({ ...newCode, expiryDate: e.target.value })}
-                  className="bg-muted border-border"
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsGenerateOpen(false)} className="border-border">
-                Cancel
-              </Button>
-              <Button onClick={handleGenerateCode} className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                Generate Code
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+      {/* HEADER */}
+      <div>
+        <h1 className="text-xl font-semibold">Media Organizations</h1>
+        <p className="text-muted-foreground">
+          Manage registered media agencies
+        </p>
       </div>
 
+      {/* STATS */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="p-6 bg-card border-border">
-          <p className="text-sm text-muted-foreground">Total Codes</p>
-          <h2 className="mt-2">{inviteCodes.length}</h2>
+        <Card className="p-6">
+          <p className="text-sm text-muted-foreground">Total Agencies</p>
+          <h2 className="text-2xl font-bold">{data.length}</h2>
         </Card>
-        <Card className="p-6 bg-card border-border">
-          <p className="text-sm text-muted-foreground">Active Codes</p>
-          <h2 className="mt-2 text-primary">
-            {inviteCodes.filter(code => code.status === "Active").length}
+
+        <Card className="p-6">
+          <p className="text-sm text-muted-foreground">Media Types</p>
+          <h2 className="text-2xl font-bold">
+            {[...new Set(data.map((d) => d.mediaType))].length}
           </h2>
         </Card>
-        <Card className="p-6 bg-card border-border">
-          <p className="text-sm text-muted-foreground">Total Uses</p>
-          <h2 className="mt-2">
-            {inviteCodes.reduce((sum, code) => sum + code.usageCount, 0)}
+
+        <Card className="p-6">
+          <p className="text-sm text-muted-foreground">States</p>
+          <h2 className="text-2xl font-bold">
+            {[...new Set(data.map((d) => d.state))].length}
           </h2>
         </Card>
-        <Card className="p-6 bg-card border-border">
-          <p className="text-sm text-muted-foreground">Available Uses</p>
-          <h2 className="mt-2">
-            {inviteCodes
-              .filter(code => code.status === "Active")
-              .reduce((sum, code) => sum + (code.maxUses - code.usageCount), 0)}
+
+        <Card className="p-6">
+          <p className="text-sm text-muted-foreground">Cities</p>
+          <h2 className="text-2xl font-bold">
+            {[...new Set(data.map((d) => d.city))].length}
           </h2>
         </Card>
       </div>
 
-      <Card className="p-4 bg-card border-border">
-        <div className="flex items-center gap-4">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder="Search invite codes..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 bg-muted border-border"
-            />
-          </div>
+      {/* SEARCH */}
+      <Card className="p-4">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" />
+          <Input
+            placeholder="Search by organization, email or city"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
         </div>
       </Card>
-      <div className="grid grid-cols-1 gap-6">
-        <div className="w-full">
-          <Card className="bg-card border-border overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow className="border-border hover:bg-transparent">
-                  <TableHead>Code</TableHead>
-                  <TableHead>Created Date</TableHead>
-                  <TableHead>Expiry Date</TableHead>
-                  <TableHead>Usage Count</TableHead>
-                  <TableHead>Max Uses</TableHead>
-                  <TableHead>Created By</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {inviteCodes
-                  .filter(code =>
-                    code.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    code.createdBy.toLowerCase().includes(searchTerm.toLowerCase())
-                  )
-                  .map((code) => {
-                    const usagePercentage = (code.usageCount / code.maxUses) * 100;
 
-                    return (
-                      <TableRow key={code.id} className="border-border">
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <code className="px-2 py-1 bg-muted rounded text-primary">
-                              {code.code}
-                            </code>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleCopyCode(code.code)}
-                              className="h-8 w-8 p-0"
-                            >
-                              {copiedCode === code.code ? (
-                                <Check className="w-4 h-4 text-primary" />
-                              ) : (
-                                <Copy className="w-4 h-4" />
-                              )}
-                            </Button>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-muted-foreground">{code.createdDate}</TableCell>
-                        <TableCell className="text-muted-foreground">{code.expiryDate}</TableCell>
-                        <TableCell>
-                          <div>
-                            <p>{code.usageCount}</p>
-                            <div className="w-24 h-1.5 bg-muted rounded-full mt-1 overflow-hidden">
-                              <div
-                                className="h-full bg-primary rounded-full transition-all"
-                                style={{ width: `${usagePercentage}%` }}
-                              />
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>{code.maxUses}</TableCell>
-                        <TableCell className="text-muted-foreground text-sm">{code.createdBy}</TableCell>
-                        <TableCell>
-                          <Badge
-                            variant={code.status === "Active" ? "default" : "secondary"}
-                            className={code.status === "Active" ? "bg-primary text-primary-foreground" : ""}
-                          >
-                            {code.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="border-border text-destructive hover:bg-destructive hover:text-destructive-foreground"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-              </TableBody>
-            </Table>
-          </Card>
-        </div>
+      {/* TABLE */}
+      <div className="grid grid-cols-1">
+        <Card>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Organization</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>Media</TableHead>
+                <TableHead>Location</TableHead>
+                <TableHead>Contact</TableHead>
+                <TableHead>Created</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Action</TableHead>
+              </TableRow>
+            </TableHeader>
+
+            <TableBody>
+              {filteredData.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={8} className="text-center py-6 text-muted-foreground">
+                    No media organizations available
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredData
+                  .slice(
+                    (currentPage - 1) * itemsPerPage,
+                    currentPage * itemsPerPage
+                  )
+                  .map((item) => (
+                    <TableRow key={item._id}>
+                    <TableCell>
+                      <p className="font-medium">{item.organization}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {item.websiteUrl}
+                      </p>
+                    </TableCell>
+
+                    <TableCell>{item.organizationType}</TableCell>
+                    <TableCell>
+                      <Badge className="capitalize">{item.mediaType}</Badge>
+                    </TableCell>
+
+                    <TableCell>
+                      {item.city}, {item.state}
+                    </TableCell>
+
+                    <TableCell>
+                      <p>{item.personName}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {item.email}
+                      </p>
+                    </TableCell>
+
+                    <TableCell>
+                      {new Date(item.createdAt).toDateString()}
+                    </TableCell>
+
+                    <TableCell>
+                      <Badge className="bg-primary text-primary-foreground">
+                        Active
+                      </Badge>
+                    </TableCell>
+
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedAgency(item);
+                            setOpenView(true);
+                          }}
+                          className="h-8 w-8 p-0 hover:bg-primary/10 hover:text-primary"
+                        >
+                          <Eye size={16} />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDelete(item._id)}
+                          className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
+                        >
+                          <Trash2 size={16} />
+                        </Button>
+                      </div>
+                    </TableCell>
+
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </Card>
       </div>
-      <div className="flex items-center justify-between">
+
+      {/* PAGINATION */}
+      <div className="flex justify-between items-center">
         <p className="text-sm text-muted-foreground">
-          Showing {inviteCodes.length} of {inviteCodes.length} invite codes
+          Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
+          {Math.min(currentPage * itemsPerPage, filteredData.length)} of{" "}
+          {filteredData.length}
         </p>
+
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" disabled className="border-border">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((p) => p - 1)}
+          >
             Previous
           </Button>
-          <Button variant="outline" size="sm" disabled className="border-border">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={
+              currentPage >=
+              Math.ceil(filteredData.length / itemsPerPage)
+            }
+            onClick={() => setCurrentPage((p) => p + 1)}
+          >
             Next
           </Button>
         </div>
       </div>
+
+      {/* VIEW MODAL */}
+      {openView && selectedAgency && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4">
+          <div className="bg-card border border-border rounded-2xl w-full max-w-2xl max-h-[90vh] sm:max-h-[90vh] overflow-x-auto shadow-2xl mx-2 sm:mx-0">
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 sm:p-6 border-b border-border bg-muted/30">
+              <div className="flex-1 min-w-0">
+                <h2 className="text-lg sm:text-xl font-semibold text-foreground truncate">Media Organization Details</h2>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1 hidden sm:block">Complete information about this organization</p>
+              </div>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setOpenView(false)}
+                className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive rounded-full flex-shrink-0 ml-2"
+              >
+                ✕
+              </Button>
+            </div>
+
+            {/* Content */}
+            <div className="p-4 sm:p-6 overflow-y-auto max-h-[calc(95vh-120px)] sm:max-h-[calc(90vh-140px)]">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+                {/* Left Column */}
+                <div className="space-y-4">
+                  <div className="bg-muted/20 rounded-lg p-3 sm:p-4">
+                    <h3 className="font-medium text-foreground mb-3 flex items-center gap-2">
+                      <div className="w-2 h-2 bg-primary rounded-full"></div>
+                      Organization Info
+                    </h3>
+                    <div className="space-y-3">
+                      <div className="flex flex-col gap-1">
+                        <span className="text-xs sm:text-sm font-medium text-muted-foreground">Organization:</span>
+                        <span className="text-sm sm:text-base text-foreground font-medium">{selectedAgency.organization}</span>
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <span className="text-xs sm:text-sm font-medium text-muted-foreground">Type:</span>
+                        <span className="text-sm sm:text-base text-foreground">{selectedAgency.organizationType}</span>
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <span className="text-xs sm:text-sm font-medium text-muted-foreground">Media Type:</span>
+                        <Badge className="capitalize w-fit text-xs">{selectedAgency.mediaType}</Badge>
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <span className="text-xs sm:text-sm font-medium text-muted-foreground">Website:</span>
+                        <a href={selectedAgency.websiteUrl} target="_blank" className="text-sm sm:text-base text-primary underline break-all">
+                          {selectedAgency.websiteUrl}
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-muted/20 rounded-lg p-3 sm:p-4">
+                    <h3 className="font-medium text-foreground mb-3 flex items-center gap-2">
+                      <div className="w-2 h-2 bg-primary rounded-full"></div>
+                      Location
+                    </h3>
+                    <div className="space-y-3">
+                      <div className="flex flex-col gap-1">
+                        <span className="text-xs sm:text-sm font-medium text-muted-foreground">Country:</span>
+                        <span className="text-sm sm:text-base text-foreground">{selectedAgency.country}</span>
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <span className="text-xs sm:text-sm font-medium text-muted-foreground">State:</span>
+                        <span className="text-sm sm:text-base text-foreground">{selectedAgency.state}</span>
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <span className="text-xs sm:text-sm font-medium text-muted-foreground">City:</span>
+                        <span className="text-sm sm:text-base text-foreground">{selectedAgency.city}</span>
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <span className="text-xs sm:text-sm font-medium text-muted-foreground">Address:</span>
+                        <span className="text-sm sm:text-base text-foreground">{selectedAgency.address}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Column */}
+                <div className="space-y-4">
+                  <div className="bg-muted/20 rounded-lg p-3 sm:p-4">
+                    <h3 className="font-medium text-foreground mb-3 flex items-center gap-2">
+                      <div className="w-2 h-2 bg-primary rounded-full"></div>
+                      Contact Details
+                    </h3>
+                    <div className="space-y-3">
+                      <div className="flex flex-col gap-1">
+                        <span className="text-xs sm:text-sm font-medium text-muted-foreground">Contact Person:</span>
+                        <span className="text-sm sm:text-base text-foreground font-medium">{selectedAgency.personName}</span>
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <span className="text-xs sm:text-sm font-medium text-muted-foreground">Designation:</span>
+                        <span className="text-sm sm:text-base text-foreground">{selectedAgency.designation}</span>
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <span className="text-xs sm:text-sm font-medium text-muted-foreground">Phone:</span>
+                        <span className="text-sm sm:text-base text-foreground">{selectedAgency.phone}</span>
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <span className="text-xs sm:text-sm font-medium text-muted-foreground">Email:</span>
+                        <span className="text-sm sm:text-base text-primary break-all">{selectedAgency.email}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-primary/5 border border-primary/20 rounded-lg p-3 sm:p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                      <span className="text-sm font-medium text-green-600">Registration Status</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mb-3">This organization is currently active and verified.</p>
+                    <div className="flex flex-col gap-1">
+                      <span className="text-xs sm:text-sm font-medium text-muted-foreground">Created At:</span>
+                      <span className="text-sm sm:text-base text-foreground">{new Date(selectedAgency.createdAt).toDateString()}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between p-4 sm:p-6 border-t border-border bg-muted/30 gap-3 sm:gap-0">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setOpenView(false)}
+                  className="border-border"
+                >
+                  Close
+                </Button>
+                <Button 
+                  size="sm"
+                  onClick={() => window.open(`mailto:${selectedAgency.email}`)}
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground "
+                >
+                  <Mail className="w-4 h-4 mr-2" />
+                  Contact
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

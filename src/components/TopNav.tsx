@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Bell, User, LogOut, Menu, MoreVertical } from "lucide-react";
 import { Badge } from "./ui/badge";
+import { ThemeToggle } from "./ThemeToggle";
 
 interface TopNavProps {
   onLogout?: () => void;
@@ -54,13 +55,13 @@ export function TopNav({ onLogout, onToggleSidebar }: TopNavProps) {
           </button>
         )}
 
-        <h2 className="font-medium">Admin Dashboard</h2>
+        <h2 className="font-medium">ePressNote</h2>
       </div>
 
       {/* RIGHT SIDE */}
       {isDesktop ? (
-     
-        <div className="p-2 hover:bg-muted justify-end flex rounded-lg">
+
+        <div className="p-2  justify-end flex rounded-lg">
           {/* <button className="relative p-2 hover:bg-muted rounded-lg transition-colors">
             <Bell className="w-5 h-5 cursor-pointer" />
             <Badge className="absolute -top-1 -right-1 bg-primary text-primary-foreground w-5 h-5 flex items-center justify-center p-0 text-xs">
@@ -68,7 +69,8 @@ export function TopNav({ onLogout, onToggleSidebar }: TopNavProps) {
             </Badge>
           </button> */}
 
-          <div className="flex items-center gap-3 pl-4 border-l border-border">
+          <ThemeToggle />
+          <div className="flex items-center gap-2 pl-2 border-l border-border">
             <div className="text-right">
               <p className="text-sm">{user?.name || "User"}</p>
               <p className="text-xs text-muted-foreground">{user?.email || "Loading..."}</p>
@@ -98,8 +100,8 @@ export function TopNav({ onLogout, onToggleSidebar }: TopNavProps) {
 
           {showMobileMenu && (
             <div className="fixed right-2 top-16 w-56 bg-card border border-border rounded-lg shadow-lg z-50">
-
-              <div className="p-4 border-b border-border">
+              <ThemeToggle />
+              <div className="p-2 border-b border-border">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
                     <User className="w-5 h-5 text-primary-foreground" />

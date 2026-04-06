@@ -27,13 +27,14 @@ export function Login({ onLogin, onShowSignup }: LoginProps) {
     setIsLoading(true);
 
     try {
-      const response = await api.post('/api/v1/auth/login', {
+      const response = await api.post('/api/v1/admin/auth/loginAdminUser', {
         email,
         password
       });
 
       localStorage.setItem("token", response.data.token);
       localStorage.setItem("user", JSON.stringify(response.data.user));
+      localStorage.setItem("theme", "light");
       onLogin();
     } catch (error: any) {
       setError(error.response?.data?.message || "Invalid email or password");
@@ -55,6 +56,7 @@ export function Login({ onLogin, onShowSignup }: LoginProps) {
         </div>
 
         <Card className="p-6 sm:p-8 bg-card border-border">
+      
           <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
             <div className="space-y-2">
               <Label htmlFor="email" className="text-sm sm:text-base">Email Address</Label>
@@ -63,10 +65,11 @@ export function Login({ onLogin, onShowSignup }: LoginProps) {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="admin@epress.sa"
+                  placeholder="admin@demo.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="pl-10 sm:pl-12 bg-muted border-border text-sm sm:text-base h-10 sm:h-11"
+                  autoComplete="off"
                   required
                 />
               </div>
@@ -79,10 +82,11 @@ export function Login({ onLogin, onShowSignup }: LoginProps) {
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  placeholder="Enter your password"
+                  placeholder="admin123"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="pl-10 sm:pl-12 pr-10 sm:pr-12 bg-muted border-border text-sm sm:text-base h-10 sm:h-11"
+                  autoComplete="off"
                   required
                 />
                 <button
