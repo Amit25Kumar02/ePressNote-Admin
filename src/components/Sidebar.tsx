@@ -8,11 +8,11 @@ import {
   Megaphone,
   MessageCircle,
   FileText,
-  Folder,
   FolderOpen,
   BadgePercent,
   IndianRupee,
   Handshake,
+  ShieldCheck,
 } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle"; 
 
@@ -25,7 +25,10 @@ interface SidebarProps {
 }
 
 export function Sidebar({ activeSection, onNavigate, isOpen = true, onClose, isMobile = false }: SidebarProps) {
-  const navItems = [
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const isManager = user?.role === "Manager";
+
+  const allNavItems = [
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
     { id: "users", label: "Users", icon: Users },
     { id: "businesses", label: "Advertisements", icon: Megaphone },
@@ -37,7 +40,16 @@ export function Sidebar({ activeSection, onNavigate, isOpen = true, onClose, isM
     { id: "offer", label: "Offers", icon: BadgePercent },
     { id: "price", label: "Pricing", icon: IndianRupee },
     { id: "media-partners", label: "Media Partners", icon: Handshake },
+    { id: "roles", label: "Roles", icon: ShieldCheck },
   ];
+
+  const managerNavItems = [
+    { id: "businesses", label: "Advertisements", icon: Megaphone },
+    { id: "newspaper", label: "Newspaper", icon: Newspaper },
+    { id: "category", label: "Category", icon: FolderTree },
+  ];
+
+  const navItems = isManager ? managerNavItems : allNavItems;
 
   return (
     <div

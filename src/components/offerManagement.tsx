@@ -153,7 +153,7 @@ export default function OfferManagement() {
                 <TableRow key={offer._id}>
                   <TableCell>
                     <img
-                      src={`https://prodapi.epressnote.com/uploads/${offer.image}`}
+                      src={`${offer.image}`}
                       className="w-20 h-12 object-contain"
                       alt="Offer"
                     />

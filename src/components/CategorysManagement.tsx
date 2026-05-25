@@ -198,7 +198,7 @@ export default function CategoriesPage() {
                       <TableCell>
                         {cat.image ? (
                           <img
-                            src={`${BACKEND_URL}/uploads/${cat.image}`}
+                            src={`${cat.image}`}
                             className="w-10 h-10 object-contain"
                           />
                         ) : (

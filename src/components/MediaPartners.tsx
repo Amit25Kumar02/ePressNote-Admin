@@ -145,7 +145,7 @@ export default function MediaPartners() {
                       <TableCell>
                         {partner.image ? (
                           <img
-                            src={`${BACKEND_URL}/uploads/${partner.image}`}
+                            src={`${partner.image}`}
                             className="w-14 h-8 object-contain"
                             alt="Media Partner"
                           />

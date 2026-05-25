@@ -31,7 +31,7 @@ type PressNote = {
   address?: string;
   content: string | {
     contentText?: string;
-    contentImage?: string;
+    contentImage?: { url: string; description?: string; _id?: string }[];
     _id?: string;
   }[];
   publishInState?: string;
@@ -416,7 +416,7 @@ export function PressNoteManagement() {
                       </h3>
                       <div className="rounded-lg overflow-hidden border border-border">
                         <img 
-                          src={`https://prodapi.epressnote.com/uploads/${selectedNote.addImage}`}
+                          src={`${selectedNote.addImage}`}
                           alt="Press Note Image"
                           className="w-full h-auto object-cover"
                           style={{ maxHeight: '250px' }}
@@ -449,17 +449,28 @@ export function PressNoteManagement() {
                             <div
                               className="text-sm text-foreground leading-relaxed mb-2"
                               dangerouslySetInnerHTML={{
-                                __html: item.contentText.replace(/style="[^"]*"/g, '')
+                                __html: item.contentText
+                                  .replace(/style="[^"]*"/g, '')
+                                  .replace(/\n/g, '<br/>')
                               }}
                             />
                           )}
-                          {item.contentImage && (
-                            <img
-                              src={`https://prodapi.epressnote.com/uploads/${item.contentImage}`}
-                              alt={`Content ${index + 1}`}
-                              className="max-w-full h-auto rounded border"
-                              style={{ maxHeight: '200px' }}
-                            />
+                          {item.contentImage && Array.isArray(item.contentImage) && item.contentImage.length > 0 && (
+                            <div className="space-y-2 mt-2">
+                              {item.contentImage.map((img) => (
+                                <div key={img._id}>
+                                  <img
+                                    src={`${img.url}`}
+                                    alt={img.description || "Content Image"}
+                                    className="max-w-full h-auto rounded border"
+                                    style={{ maxHeight: '200px' }}
+                                  />
+                                  {img.description && (
+                                    <p className="text-xs text-muted-foreground mt-1">{img.description}</p>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
                           )}
                         </div>
                       ))}

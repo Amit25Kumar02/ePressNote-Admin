@@ -2383,6 +2383,26 @@ html {
   font-family: Inter, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif;
 }
 
+/* Scrollbar theme-aware */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--sidebar-border) var(--sidebar);
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: var(--sidebar);
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--sidebar-border);
+  border-radius: 999px;
+}
+
 :root {
   --lightningcss-light: ;
   --lightningcss-dark: initial;

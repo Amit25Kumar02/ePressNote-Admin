@@ -43,7 +43,7 @@ type Advertisement = {
     name: string;
   };
   newspapers?: {
-    newspaper: string;
+    newspaper: string | { _id: string; name: string };
     adType: string;
     _id: string;
   }[];
@@ -51,16 +51,11 @@ type Advertisement = {
   updatedAt?: string;
 };
 
-type Newspaper = {
-  _id: string;
-  name: string;
-};
-
 /* ================= COMPONENT ================= */
 
 export default function AdvertisementsManagement() {
   const [ads, setAds] = useState<Advertisement[]>([]);
-  const [newspapers, setNewspapers] = useState<Newspaper[]>([]);
+  const [newspapers, setNewspapers] = useState<Record<string, string>>({});
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedAd, setSelectedAd] = useState<Advertisement | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -85,13 +80,18 @@ export default function AdvertisementsManagement() {
     }
   };
 
-  const fetchNewspapers = async () => {
+  const fetchNewspapers = async (ids: string[]) => {
+    const token = localStorage.getItem("token");
+    const missing = ids.filter(id => !newspapers[id]);
+    if (!missing.length) return;
     try {
-      const token = localStorage.getItem("token");
-      const res = await api.get("/api/v1/admin/newspapers", {
-        headers: { Authorization: `Bearer ${token}` }
+      const res = await api.get(`/api/v1/admin/newspapers?limit=1000&page=1`, {
+        headers: { Authorization: `Bearer ${token}`, "ngrok-skip-browser-warning": "true" }
       });
-      setNewspapers(res.data?.newspapers || res.data?.data || []);
+      const list: any[] = res.data?.newspapers || res.data?.data || [];
+      const results: Record<string, string> = {};
+      list.forEach((n: any) => { if (n._id && n.name) results[n._id] = n.name; });
+      setNewspapers(prev => ({ ...prev, ...results }));
     } catch {
       console.error("Failed to load newspapers");
     }
@@ -99,7 +99,6 @@ export default function AdvertisementsManagement() {
 
   useEffect(() => {
     fetchAds(currentPage);
-    fetchNewspapers();
   }, [currentPage]);
 
   /* ================= DELETE ================= */
@@ -254,7 +253,13 @@ export default function AdvertisementsManagement() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => setSelectedAd(ad)}
+                        onClick={() => {
+                          const ids = (ad.newspapers || []).map(n =>
+                            typeof n.newspaper === 'string' ? n.newspaper : (n.newspaper as any)._id
+                          );
+                          fetchNewspapers(ids);
+                          setSelectedAd(ad);
+                        }}
                         className="h-8 w-8 p-0 hover:bg-primary/10 hover:text-primary"
                       >
                         <Eye size={16} />
@@ -381,10 +386,15 @@ export default function AdvertisementsManagement() {
                   <label className="text-sm font-medium text-muted-foreground">Newspapers & Ad Types</label>
                   <div className="mt-1 space-y-1">
                     {selectedAd.newspapers.map((item) => {
-                      const newspaper = newspapers.find(n => n._id === item.newspaper);
+                      const id = typeof item.newspaper === 'object' && item.newspaper !== null
+                        ? (item.newspaper as any)._id
+                        : item.newspaper as string;
+                      const name = typeof item.newspaper === 'object' && item.newspaper !== null
+                        ? (item.newspaper as any).name
+                        : newspapers[id] || id;
                       return (
                         <div key={item._id} className="text-sm bg-muted p-2 rounded">
-                          <span className="font-medium">Newspaper:</span> {newspaper?.name || item.newspaper} - 
+                          <span className="font-medium">Newspaper:</span> {name} -
                           <span className="font-medium"> Ad Type:</span> {item.adType}
                         </div>
                       );

@@ -156,7 +156,7 @@ export function Login({ onLogin, onShowSignup }: LoginProps) {
 
         <div className="mt-4 sm:mt-6 text-center">
           <p className="text-xs sm:text-sm text-muted-foreground">
-            © 2025 ePress Note. All rights reserved.
+            © 2026 ePress Note. All rights reserved.
           </p>
         </div>
       </div>

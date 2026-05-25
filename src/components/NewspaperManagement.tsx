@@ -68,13 +68,237 @@ export default function NewspapersPage() {
   const [isEPress, setIsEPress] = useState(false);
   const [activeTab, setActiveTab] = useState<"adv" | "epress">("adv");
 
-  // Indian States and Districts
+  // ADD THESE STATES
+  const [manualState, setManualState] = useState("");
+  const [manualDistrict, setManualDistrict] = useState("");
+
+  // Indian States and Districts (All States & UTs)
   const statesData: { [key: string]: string[] } = {
-    "Haryana": ["Hisar", "Sirsa", "Fatehabad", "Jind", "Rohtak", "Sonipat", "Panipat", "Karnal", "Ambala", "Kurukshetra"],
-    "Punjab": ["Amritsar", "Ludhiana", "Jalandhar", "Patiala", "Bathinda", "Mohali", "Hoshiarpur"],
-    "Delhi": ["Central Delhi", "North Delhi", "South Delhi", "East Delhi", "West Delhi"],
-    "Uttar Pradesh": ["Lucknow", "Kanpur", "Ghaziabad", "Agra", "Meerut", "Varanasi", "Allahabad"],
-    "Rajasthan": ["Jaipur", "Jodhpur", "Udaipur", "Kota", "Ajmer", "Bikaner"],
+    "Andhra Pradesh": [
+      "Anantapur", "Chittoor", "East Godavari", "Guntur", "Kadapa",
+      "Krishna", "Kurnool", "Nellore", "Prakasam", "Srikakulam",
+      "Visakhapatnam", "Vizianagaram", "West Godavari"
+    ],
+
+    "Arunachal Pradesh": [
+      "Tawang", "West Kameng", "East Kameng", "Papum Pare",
+      "Kurung Kumey", "Kra Daadi", "Lower Subansiri",
+      "Upper Subansiri", "West Siang", "East Siang"
+    ],
+
+    "Assam": [
+      "Baksa", "Barpeta", "Biswanath", "Bongaigaon", "Cachar",
+      "Charaideo", "Darrang", "Dhemaji", "Dhubri", "Dibrugarh",
+      "Goalpara", "Golaghat", "Hailakandi", "Jorhat", "Kamrup",
+      "Karimganj", "Kokrajhar", "Lakhimpur", "Majuli", "Morigaon",
+      "Nagaon", "Nalbari", "Sivasagar", "Sonitpur", "Tinsukia"
+    ],
+
+    "Bihar": [
+      "Araria", "Aurangabad", "Banka", "Begusarai", "Bhagalpur",
+      "Bhojpur", "Buxar", "Darbhanga", "Gaya", "Katihar",
+      "Madhubani", "Muzaffarpur", "Nalanda", "Patna", "Purnia",
+      "Rohtas", "Samastipur", "Saran", "Siwan", "Vaishali"
+    ],
+
+    "Chhattisgarh": [
+      "Balod", "Baloda Bazar", "Bastar", "Bilaspur", "Dantewada",
+      "Dhamtari", "Durg", "Gariaband", "Janjgir-Champa", "Jashpur",
+      "Kabirdham", "Korba", "Koriya", "Mahasamund", "Raigarh",
+      "Raipur", "Rajnandgaon", "Surajpur", "Surguja"
+    ],
+
+    "Goa": [
+      "North Goa", "South Goa"
+    ],
+
+    "Gujarat": [
+      "Ahmedabad", "Amreli", "Anand", "Banaskantha", "Bharuch",
+      "Bhavnagar", "Botad", "Dahod", "Gandhinagar", "Jamnagar",
+      "Junagadh", "Kachchh", "Kheda", "Mehsana", "Morbi",
+      "Rajkot", "Surat", "Vadodara", "Valsad"
+    ],
+
+    "Haryana": [
+      "Ambala", "Bhiwani", "Charkhi Dadri", "Faridabad", "Fatehabad",
+      "Gurugram", "Hisar", "Jhajjar", "Jind", "Kaithal",
+      "Karnal", "Kurukshetra", "Mahendragarh", "Nuh", "Palwal",
+      "Panchkula", "Panipat", "Rewari", "Rohtak", "Sirsa",
+      "Sonipat", "Yamunanagar"
+    ],
+
+    "Himachal Pradesh": [
+      "Bilaspur", "Chamba", "Hamirpur", "Kangra", "Kinnaur",
+      "Kullu", "Lahaul and Spiti", "Mandi", "Shimla",
+      "Sirmaur", "Solan", "Una"
+    ],
+
+    "Jharkhand": [
+      "Bokaro", "Chatra", "Deoghar", "Dhanbad", "Dumka",
+      "East Singhbhum", "Garhwa", "Giridih", "Godda", "Gumla",
+      "Hazaribagh", "Jamshedpur", "Khunti", "Koderma", "Latehar",
+      "Pakur", "Palamu", "Ranchi", "Sahibganj", "West Singhbhum"
+    ],
+
+    "Karnataka": [
+      "Bagalkot", "Ballari", "Belagavi", "Bengaluru Rural",
+      "Bengaluru Urban", "Bidar", "Chamarajanagar", "Chikkaballapur",
+      "Chikkamagaluru", "Davanagere", "Dharwad", "Gadag",
+      "Hassan", "Haveri", "Kalaburagi", "Kodagu", "Kolar",
+      "Koppal", "Mandya", "Mangaluru", "Mysuru", "Raichur",
+      "Shivamogga", "Tumakuru", "Udupi", "Uttara Kannada",
+      "Vijayapura", "Yadgir"
+    ],
+
+    "Kerala": [
+      "Alappuzha", "Ernakulam", "Idukki", "Kannur", "Kasaragod",
+      "Kollam", "Kottayam", "Kozhikode", "Malappuram",
+      "Palakkad", "Pathanamthitta", "Thiruvananthapuram",
+      "Thrissur", "Wayanad"
+    ],
+
+    "Madhya Pradesh": [
+      "Bhopal", "Burhanpur", "Chhindwara", "Dewas", "Dhar",
+      "Gwalior", "Indore", "Jabalpur", "Khandwa", "Mandsaur",
+      "Morena", "Ratlam", "Rewa", "Sagar", "Satna",
+      "Sehore", "Shivpuri", "Ujjain", "Vidisha"
+    ],
+
+    "Maharashtra": [
+      "Ahmednagar", "Akola", "Amravati", "Aurangabad", "Beed",
+      "Bhandara", "Chandrapur", "Dhule", "Jalgaon", "Kolhapur",
+      "Latur", "Mumbai City", "Mumbai Suburban", "Nagpur",
+      "Nanded", "Nashik", "Osmanabad", "Palghar", "Pune",
+      "Raigad", "Ratnagiri", "Sangli", "Satara", "Solapur",
+      "Thane", "Wardha", "Yavatmal"
+    ],
+
+    "Manipur": [
+      "Bishnupur", "Chandel", "Churachandpur", "Imphal East",
+      "Imphal West", "Kakching", "Senapati", "Tamenglong",
+      "Thoubal", "Ukhrul"
+    ],
+
+    "Meghalaya": [
+      "East Garo Hills", "East Khasi Hills", "Jaintia Hills",
+      "Ri-Bhoi", "South Garo Hills", "West Garo Hills",
+      "West Khasi Hills"
+    ],
+
+    "Mizoram": [
+      "Aizawl", "Champhai", "Kolasib", "Lawngtlai",
+      "Lunglei", "Mamit", "Saiha", "Serchhip"
+    ],
+
+    "Nagaland": [
+      "Dimapur", "Kiphire", "Kohima", "Longleng", "Mokokchung",
+      "Mon", "Peren", "Phek", "Tuensang", "Wokha", "Zunheboto"
+    ],
+
+    "Odisha": [
+      "Angul", "Balangir", "Balasore", "Bargarh", "Bhadrak",
+      "Cuttack", "Dhenkanal", "Ganjam", "Jagatsinghpur",
+      "Jajpur", "Jharsuguda", "Kalahandi", "Kendrapara",
+      "Khordha", "Koraput", "Mayurbhanj", "Puri", "Sambalpur",
+      "Sundargarh"
+    ],
+
+    "Punjab": [
+      "Amritsar", "Barnala", "Bathinda", "Faridkot", "Fatehgarh Sahib",
+      "Fazilka", "Firozpur", "Gurdaspur", "Hoshiarpur", "Jalandhar",
+      "Kapurthala", "Ludhiana", "Mansa", "Moga", "Mohali",
+      "Muktsar", "Nawanshahr", "Pathankot", "Patiala", "Rupnagar",
+      "Sangrur", "Tarn Taran"
+    ],
+
+    "Rajasthan": [
+      "Ajmer", "Alwar", "Baran", "Barmer", "Bharatpur",
+      "Bhilwara", "Bikaner", "Bundi", "Chittorgarh", "Churu",
+      "Dausa", "Ganganagar", "Hanumangarh", "Jaipur", "Jaisalmer",
+      "Jalore", "Jhalawar", "Jhunjhunu", "Jodhpur", "Kota",
+      "Nagaur", "Pali", "Sikar", "Sirohi", "Tonk", "Udaipur"
+    ],
+
+    "Sikkim": [
+      "East Sikkim", "North Sikkim", "South Sikkim", "West Sikkim"
+    ],
+
+    "Tamil Nadu": [
+      "Chennai", "Coimbatore", "Cuddalore", "Dharmapuri", "Dindigul",
+      "Erode", "Kanchipuram", "Kanyakumari", "Karur", "Madurai",
+      "Nagapattinam", "Namakkal", "Nilgiris", "Salem",
+      "Thanjavur", "Theni", "Thoothukudi", "Tiruchirappalli",
+      "Tirunelveli", "Tiruppur", "Vellore"
+    ],
+
+    "Telangana": [
+      "Adilabad", "Bhadradri Kothagudem", "Hyderabad", "Jagtial",
+      "Karimnagar", "Khammam", "Mahabubnagar", "Medak",
+      "Nalgonda", "Nizamabad", "Rangareddy", "Warangal"
+    ],
+
+    "Tripura": [
+      "Dhalai", "Gomati", "Khowai", "North Tripura",
+      "Sepahijala", "South Tripura", "Unakoti", "West Tripura"
+    ],
+
+    "Uttar Pradesh": [
+      "Agra", "Aligarh", "Allahabad", "Amethi", "Azamgarh",
+      "Bareilly", "Basti", "Firozabad", "Ghaziabad", "Gorakhpur",
+      "Jhansi", "Kanpur", "Lucknow", "Mathura", "Meerut",
+      "Moradabad", "Noida", "Prayagraj", "Raebareli", "Saharanpur",
+      "Sitapur", "Varanasi"
+    ],
+
+    "Uttarakhand": [
+      "Almora", "Chamoli", "Dehradun", "Haridwar", "Nainital",
+      "Pauri Garhwal", "Pithoragarh", "Rudraprayag", "Tehri Garhwal",
+      "Udham Singh Nagar", "Uttarkashi"
+    ],
+
+    "West Bengal": [
+      "Alipurduar", "Bankura", "Birbhum", "Cooch Behar",
+      "Darjeeling", "Hooghly", "Howrah", "Jalpaiguri",
+      "Kolkata", "Malda", "Murshidabad", "Nadia",
+      "North 24 Parganas", "Purulia", "South 24 Parganas"
+    ],
+
+    // Union Territories
+    "Delhi": [
+      "Central Delhi", "East Delhi", "New Delhi", "North Delhi",
+      "North East Delhi", "North West Delhi", "Shahdara",
+      "South Delhi", "South East Delhi", "South West Delhi",
+      "West Delhi"
+    ],
+
+    "Jammu and Kashmir": [
+      "Anantnag", "Baramulla", "Budgam", "Doda", "Jammu",
+      "Kathua", "Kupwara", "Pulwama", "Rajouri", "Srinagar", "Udhampur"
+    ],
+
+    "Ladakh": [
+      "Kargil", "Leh"
+    ],
+
+    "Chandigarh": [
+      "Chandigarh"
+    ],
+
+    "Puducherry": [
+      "Karaikal", "Mahe", "Puducherry", "Yanam"
+    ],
+
+    "Andaman and Nicobar Islands": [
+      "Nicobar", "North and Middle Andaman", "South Andaman"
+    ],
+
+    "Dadra and Nagar Haveli and Daman and Diu": [
+      "Dadra and Nagar Haveli", "Daman", "Diu"
+    ],
+
+    "Lakshadweep": [
+      "Kavaratti"
+    ]
   };
 
   //  adType dynamic state
@@ -93,10 +317,10 @@ export default function NewspapersPage() {
 
   const fetchNewspapers = async (page = 1) => {
     try {
-      const endpoint = activeTab === "adv" 
+      const endpoint = activeTab === "adv"
         ? `/api/v1/admin/newspapers?page=${page}&limit=${itemsPerPage}&sort=-createdAt&isEPress=false`
         : `/api/v1/admin/epressNewspapers/getEpressNewspaper?page=${page}&limit=${itemsPerPage}`;
-      
+
       const res = await api.get(endpoint, {
         headers: {
           "ngrok-skip-browser-warning": "true"
@@ -125,16 +349,16 @@ export default function NewspapersPage() {
     setName(paper.name);
     setEmail(Array.isArray(paper.email) ? paper.email.join(",") : paper.email || "");
     setLanguage(paper.language);
-    
+
     const isEPressNewspaper = paper.isEPress || activeTab === "epress";
     setIsEPress(isEPressNewspaper);
-    
+
     if (isEPressNewspaper) {
       setSelectedState(paper.state || paper.locations?.[0] || "");
       setSelectedDistrict(paper.district || paper.locations?.[1] || "");
     } else {
       setLocations(paper.locations?.join(",") || "");
-      
+
       //  merge default types with existing prices
       const updated = DEFAULT_ADTYPES.map((d) => {
         const found = paper.adType?.find(
@@ -194,9 +418,32 @@ export default function NewspapersPage() {
       return;
     }
 
+    // FINAL STATE & DISTRICT
+    const finalState =
+      selectedState === "other"
+        ? manualState.trim()
+        : selectedState;
+
+    const finalDistrict =
+      selectedDistrict === "other"
+        ? manualDistrict.trim()
+        : selectedDistrict;
+
+    // CLEAN EMAILS
+    const uniqueEmails = [
+      ...new Set(
+        email
+          .split(",")
+          .map((e) => e.trim().toLowerCase())
+          .filter(Boolean)
+      ),
+    ];
+
     if (isEPress) {
-      if (!selectedState || !selectedDistrict || !email) {
-        toast.error("For ePress: State, District, and Email are required");
+      if (!finalState || !finalDistrict || uniqueEmails.length === 0) {
+        toast.error(
+          "For ePress: State, District, and Email are required"
+        );
         return;
       }
     } else {
@@ -206,65 +453,71 @@ export default function NewspapersPage() {
       }
     }
 
-    if (!isEPress) {
-      const hasInvalidAdType = adTypes.some(
-        (a) => !a.addType || a.addPrice === "" || Number(a.addPrice) <= 0
-      );
-
-      // if (hasInvalidAdType) {
-      //   toast.error("Please fill all Ad Types with valid price");
-      //   return;
-      // }
-    }
-
     try {
       setLoading(true);
+
       const token = localStorage.getItem("token");
 
       if (isEPress) {
-        // ePress mode: send as JSON
+        // ePress JSON PAYLOAD
         const payload = {
-          state: selectedState,
-          district: selectedDistrict,
-          language: language,
-          email: email
+          state: finalState,
+          district: finalDistrict,
+          language,
+          email: uniqueEmails,
         };
 
         if (editId) {
-          await api.put(`/api/v1/admin/epressNewspapers/updateEpressNewspaper?id=${editId}`, payload, {
-            headers: { 
-              Authorization: `Bearer ${token}`,
-              "ngrok-skip-browser-warning": "true",
-              "Content-Type": "application/json"
-            },
-          });
+          await api.put(
+            `/api/v1/admin/epressNewspapers/updateEpressNewspaper?id=${editId}`,
+            payload,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "ngrok-skip-browser-warning": "true",
+                "Content-Type": "application/json",
+              },
+            }
+          );
         } else {
-          await api.post("/api/v1/admin/epressNewspapers/createEpressNewspaper", payload, {
-            headers: { 
-              Authorization: `Bearer ${token}`,
-              "ngrok-skip-browser-warning": "true",
-              "Content-Type": "application/json"
-            },
-          });
+          await api.post(
+            "/api/v1/admin/epressNewspapers/createEpressNewspaper",
+            payload,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "ngrok-skip-browser-warning": "true",
+                "Content-Type": "application/json",
+              },
+            }
+          );
         }
       } else {
-        // Advertisement mode: send as FormData
+        // Advertisement mode
         const formData = new FormData();
+
         formData.append("name", name);
         formData.append("language", language);
-        
-        locations.split(",").map((l) => l.trim()).filter(Boolean).forEach((loc) => {
-          formData.append("locations[]", loc);
-        });
-        
-        if (email) {
-          email.split(",").map((e) => e.trim()).filter(Boolean).forEach((emailItem) => {
-            formData.append("email[]", emailItem);
+
+        locations
+          .split(",")
+          .map((l) => l.trim())
+          .filter(Boolean)
+          .forEach((loc) => {
+            formData.append("locations[]", loc);
           });
-        }
+
+        // UNIQUE EMAILS
+        uniqueEmails.forEach((emailItem) => {
+          formData.append("email[]", emailItem);
+        });
 
         adTypes.forEach((item, index) => {
-          formData.append(`adType[${index}][addType]`, item.addType);
+          formData.append(
+            `adType[${index}][addType]`,
+            item.addType
+          );
+
           formData.append(
             `adType[${index}][addPrice]`,
             String(Number(item.addPrice))
@@ -276,31 +529,46 @@ export default function NewspapersPage() {
         }
 
         if (editId) {
-          await api.put(`/api/v1/admin/newspapers/${editId}`, formData, {
-            headers: { 
-              Authorization: `Bearer ${token}`,
-              "ngrok-skip-browser-warning": "true",
-              "Content-Type": undefined
-            },
-          });
+          await api.put(
+            `/api/v1/admin/newspapers/${editId}`,
+            formData,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "ngrok-skip-browser-warning": "true",
+                "Content-Type": undefined,
+              },
+            }
+          );
         } else {
-          await api.post("/api/v1/admin/newspapers", formData, {
-            headers: { 
-              Authorization: `Bearer ${token}`,
-              "ngrok-skip-browser-warning": "true",
-              "Content-Type": undefined
-            },
-          });
+          await api.post(
+            "/api/v1/admin/newspapers",
+            formData,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "ngrok-skip-browser-warning": "true",
+                "Content-Type": undefined,
+              },
+            }
+          );
         }
       }
-      
-      toast.success(editId ? "Newspaper updated" : "Newspaper added");
+
+      toast.success(
+        editId
+          ? "Newspaper updated"
+          : "Newspaper added"
+      );
 
       fetchNewspapers(currentPage);
       closeModal();
     } catch (err: any) {
       console.error("API ERROR:", err.response?.data);
-      toast.error(err.response?.data?.message || "Action failed");
+
+      toast.error(
+        err.response?.data?.message || "Action failed"
+      );
     } finally {
       setLoading(false);
     }
@@ -315,9 +583,9 @@ export default function NewspapersPage() {
       const endpoint = activeTab === "epress"
         ? `/api/v1/admin/epressNewspapers/deleteEpressNewspaper?id=${id}`
         : `/api/v1/admin/newspapers/${id}`;
-      
+
       await api.delete(endpoint, {
-        headers: { 
+        headers: {
           Authorization: `Bearer ${token}`,
           "ngrok-skip-browser-warning": "true"
         },
@@ -380,21 +648,19 @@ export default function NewspapersPage() {
         <div className="flex gap-2">
           <button
             onClick={() => setActiveTab("adv")}
-            className={`px-4 py-2 font-medium transition-colors cursor-pointer ${
-              activeTab === "adv"
-                ? " bg-primary text-primary-foreground rounded-lg"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
+            className={`px-4 py-2 font-medium transition-colors cursor-pointer ${activeTab === "adv"
+              ? " bg-primary text-primary-foreground rounded-lg"
+              : "text-muted-foreground hover:text-foreground"
+              }`}
           >
             Advertisement
           </button>
           <button
             onClick={() => setActiveTab("epress")}
-            className={`px-4 py-2 font-medium transition-colors cursor-pointer ${
-              activeTab === "epress"
-                ? "bg-primary text-primary-foreground rounded-lg"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
+            className={`px-4 py-2 font-medium transition-colors cursor-pointer ${activeTab === "epress"
+              ? "bg-primary text-primary-foreground rounded-lg"
+              : "text-muted-foreground hover:text-foreground"
+              }`}
           >
             PressNote
           </button>
@@ -428,7 +694,7 @@ export default function NewspapersPage() {
                         <TableCell>
                           {paper.image ? (
                             <img
-                              src={`${BACKEND_URL}/uploads/${paper.image}`}
+                              src={`${paper.image}`}
                               className="w-14 h-8 object-contain"
                               alt={paper.name}
                             />
@@ -495,7 +761,22 @@ export default function NewspapersPage() {
                         <TableCell>{paper.state || paper.locations?.[0] || "-"}</TableCell>
                         <TableCell>{paper.district || paper.locations?.[1] || "-"}</TableCell>
                         <TableCell>{paper.language}</TableCell>
-                        <TableCell>{paper.email?.join(", ") || "-"}</TableCell>
+                        <TableCell className="max-w-[300px]">
+                          {paper.email?.length ? (
+                            <div className="flex flex-col gap-1 max-h-[140px] overflow-y-auto">
+                              {paper.email.map((item, index) => (
+                                <div
+                                  key={index}
+                                  className="break-all whitespace-pre-wrap text-sm bg-muted/40 px-2 py-1 rounded "
+                                >
+                                  {item}
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            "-"
+                          )}
+                        </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
                             <Button
@@ -597,47 +878,134 @@ export default function NewspapersPage() {
 
                 {isEPress ? (
                   <>
+                    {/* STATE */}
                     <div>
-                      <label className="block text-sm font-medium mb-1">State</label>
-                      <select
-                        value={selectedState}
-                        onChange={(e) => {
-                          setSelectedState(e.target.value);
-                          setSelectedDistrict("");
-                        }}
-                        className="w-full bg-input-background border border-border px-3 py-2 rounded"
-                      >
-                        <option value="">Select State</option>
-                        {Object.keys(statesData).map((state) => (
-                          <option key={state} value={state}>{state}</option>
-                        ))}
-                      </select>
+                      <label className="block text-sm font-medium mb-1">
+                        State
+                      </label>
+
+                      <div className="space-y-2">
+                        <select
+                          value={selectedState}
+                          onChange={(e) => {
+                            setSelectedState(e.target.value);
+                            setSelectedDistrict("");
+                          }}
+                          className="w-full bg-input-background border border-border px-3 py-2 rounded"
+                        >
+                          <option value="">Select State</option>
+                          <option value="other">Other (Manual Entry)</option>
+
+                          {Object.keys(statesData).map((state) => (
+                            <option key={state} value={state}>
+                              {state}
+                            </option>
+                          ))}
+
+                        </select>
+
+                        {selectedState === "other" && (
+                          <input
+                            type="text"
+                            value={manualState}
+                            onChange={(e) => setManualState(e.target.value)}
+                            placeholder="Enter State Name"
+                            className="w-full bg-input-background border border-border px-3 py-2 rounded"
+                          />
+                        )}
+                      </div>
                     </div>
-                    
+
+                    {/* DISTRICT */}
                     <div>
-                      <label className="block text-sm font-medium mb-1">District</label>
-                      <select
-                        value={selectedDistrict}
-                        onChange={(e) => setSelectedDistrict(e.target.value)}
-                        disabled={!selectedState}
-                        className="w-full bg-input-background border border-border px-3 py-2 rounded disabled:opacity-50"
-                      >
-                        <option value="">Select District</option>
-                        {selectedState && statesData[selectedState]?.map((district) => (
-                          <option key={district} value={district}>{district}</option>
-                        ))}
-                      </select>
+                      <label className="block text-sm font-medium mb-1">
+                        District
+                      </label>
+
+                      <div className="space-y-2">
+                        <select
+                          value={selectedDistrict}
+                          onChange={(e) => setSelectedDistrict(e.target.value)}
+                          disabled={!selectedState}
+                          className="w-full bg-input-background border border-border px-3 py-2 rounded disabled:opacity-50"
+                        >
+                          <option value="">Select District</option>
+                          <option value="other">Other (Manual Entry)</option>
+
+                          {statesData[selectedState]?.map((district) => (
+                            <option key={district} value={district}>
+                              {district}
+                            </option>
+                          ))}
+
+                        </select>
+
+                        {selectedDistrict === "other" && (
+                          <input
+                            type="text"
+                            value={manualDistrict}
+                            onChange={(e) => setManualDistrict(e.target.value)}
+                            placeholder="Enter District Name"
+                            className="w-full bg-input-background border border-border px-3 py-2 rounded"
+                          />
+                        )}
+                      </div>
                     </div>
-                    
+
+                    {/* EMAIL */}
                     <div>
-                      <label className="block text-sm font-medium mb-1">Email</label>
-                      <input
+                      <label className="block text-sm font-medium mb-1">
+                        Emails
+                      </label>
+
+                      <textarea
                         value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="Email"
-                        type="email"
-                        className="w-full bg-input-background border border-border px-3 py-2 rounded"
+                        onChange={(e) => {
+                          const value = e.target.value;
+
+                          // split by comma
+                          const emailList = value.split(",");
+
+                          // remove duplicate emails only
+                          const uniqueEmails = emailList.filter((item, index, self) => {
+                            const cleanEmail = item.trim().toLowerCase();
+
+                            return (
+                              cleanEmail === "" ||
+                              index ===
+                              self.findIndex(
+                                (e) => e.trim().toLowerCase() === cleanEmail
+                              )
+                            );
+                          });
+
+                          setEmail(uniqueEmails.join(","));
+                        }}
+                        placeholder={`Enter multiple emails
+abc@gmail.com,
+xyz@gmail.com`}
+                        rows={3}
+                        className="
+    w-full
+    min-h-[100px]
+    resize-none
+    overflow-hidden
+    bg-input-background
+    border
+    border-border
+    px-3
+    py-2
+    rounded
+  "
+                        onInput={(e: any) => {
+                          e.target.style.height = "auto";
+                          e.target.style.height = `${e.target.scrollHeight}px`;
+                        }}
                       />
+
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Separate multiple emails with commas
+                      </p>
                     </div>
                   </>
                 ) : (

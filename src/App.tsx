@@ -14,6 +14,7 @@ import MediaOrganizations from "./components/InviteCodes";
 import OfferManagement from "./components/offerManagement";
 import PricingPanel from "./components/PricingManagement";
 import MediaPartners from "./components/MediaPartners";
+import RolesManagement from "./components/RolesManagement";
 
 
 export default function App() {
@@ -102,6 +103,7 @@ export default function App() {
       case "offer": return <OfferManagement />;
       case "price": return <PricingPanel />;
       case "media-partners": return <MediaPartners />;
+      case "roles": return <RolesManagement />;
       default: return <Dashboard />;
     }
   };

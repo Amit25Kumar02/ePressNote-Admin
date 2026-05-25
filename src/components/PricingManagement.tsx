@@ -261,12 +261,16 @@ export default function PricingManagement() {
 
               <div>
                 <label className="text-sm font-medium mb-2 block">Duration</label>
-                <Input
+                <select
                   value={duration}
                   onChange={(e) => setDuration(e.target.value)}
-                  placeholder="Duration (e.g., Per Day, Per Month)"
-                  className="bg-input-background border-border"
-                />
+                  className="w-full bg-input-background border border-border px-3 py-2 rounded text-sm"
+                >
+                  <option value="">Select Duration</option>
+                  <option value="per day">Per Day</option>
+                  <option value="per month">Per Month</option>
+                  <option value="per year">Per Year</option>
+                </select>
               </div>
 
               <div>
