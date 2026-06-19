@@ -72,6 +72,9 @@ export default function NewspapersPage() {
   const [manualState, setManualState] = useState("");
   const [manualDistrict, setManualDistrict] = useState("");
 
+  const [selectedEmails, setSelectedEmails] = useState<string[]>([]);
+  const [emailModalOpen, setEmailModalOpen] = useState(false);
+
   // Indian States and Districts (All States & UTs)
   const statesData: { [key: string]: string[] } = {
     "Andhra Pradesh": [
@@ -124,7 +127,7 @@ export default function NewspapersPage() {
       "Gurugram", "Hisar", "Jhajjar", "Jind", "Kaithal",
       "Karnal", "Kurukshetra", "Mahendragarh", "Nuh", "Palwal",
       "Panchkula", "Panipat", "Rewari", "Rohtak", "Sirsa",
-      "Sonipat", "Yamunanagar"
+      "Sonipat", "Yamunanagar", "Hansi"
     ],
 
     "Himachal Pradesh": [
@@ -761,18 +764,19 @@ export default function NewspapersPage() {
                         <TableCell>{paper.state || paper.locations?.[0] || "-"}</TableCell>
                         <TableCell>{paper.district || paper.locations?.[1] || "-"}</TableCell>
                         <TableCell>{paper.language}</TableCell>
-                        <TableCell className="max-w-[300px]">
+                        <TableCell>
                           {paper.email?.length ? (
-                            <div className="flex flex-col gap-1 max-h-[140px] overflow-y-auto">
-                              {paper.email.map((item, index) => (
-                                <div
-                                  key={index}
-                                  className="break-all whitespace-pre-wrap text-sm bg-muted/40 px-2 py-1 rounded "
-                                >
-                                  {item}
-                                </div>
-                              ))}
-                            </div>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setSelectedEmails(paper.email || []);
+                                setEmailModalOpen(true);
+                              }}
+                            >
+                              {paper.email.length} Email
+                              {paper.email.length > 1 ? "s" : ""}
+                            </Button>
                           ) : (
                             "-"
                           )}
@@ -1083,6 +1087,77 @@ xyz@gmail.com`}
                       ? "Update Newspaper"
                       : "Add Newspaper"}
                 </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {emailModalOpen && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="w-full max-w-2xl max-h-[90vh] bg-card border border-border rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+
+              {/* Header */}
+              <div className="shrink-0 flex items-center justify-between px-6 py-4 border-b border-border bg-muted/30">
+                <div>
+                  <h3 className="text-xl font-semibold">
+                    Email Directory
+                  </h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Total {selectedEmails.length} registered email
+                    {selectedEmails.length !== 1 ? "s" : ""}
+                  </p>
+                </div>
+
+                <button
+                  onClick={() => setEmailModalOpen(false)}
+                  className="h-9 w-9 flex items-center justify-center  cursor-pointer"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Body */}
+              <div className="max-h-[65vh] overflow-y-auto p-6">
+                {selectedEmails.length > 0 ? (
+                  <div className="grid gap-3">
+                    {selectedEmails.map((email, index) => (
+                      <div
+                        key={index}
+                        className="
+                  flex items-center gap-3
+                  rounded-xl
+                  border border-border
+                  bg-muted/20
+                  px-4 py-3
+                  hover:bg-muted/40
+                  transition-colors
+                "
+                      >
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary text-sm font-medium">
+                          {index + 1}
+                        </div>
+
+                        <span className="text-sm break-all font-medium">
+                          {email}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="py-12 text-center text-muted-foreground">
+                    No emails available
+                  </div>
+                )}
+              </div>
+
+              {/* Footer */}
+              <div className="border-t border-border px-6 py-4 bg-muted/20 flex justify-end">
+                <Button
+                  variant="outline"
+                  onClick={() => setEmailModalOpen(false)}
+                >
+                  Close
+                </Button>
               </div>
             </div>
           </div>
